@@ -1,6 +1,6 @@
 // ==================== CONFIG ====================
 // !!! แทนที่ URL นี้ด้วย Deployment URL ของ Google Apps Script ของคุณ !!!
-const API_URL = 'https://script.google.com/macros/s/AKfycbxjmwZROLai5-MXflxsEiCOa5of3-pvyPiTv0vEsq7TO8mTOZB2hDNZrdBJIedgSJTNLg/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbynywo0eMNDu-C2Xyv5i0xdd2-GJ7nbzsCFs4a5ADeWiSeVe4Ti7IDNNq9Jkr72Pp0XAw/exec';
 
 const THAI_MONTHS = ['ตุลาคม','พฤศจิกายน','ธันวาคม','มกราคม','กุมภาพันธ์','มีนาคม',
                      'เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน'];
@@ -210,6 +210,14 @@ function switchMode(m) {
   });
   document.getElementById('techoMode').textContent = m === 'elec' ? 'ELECTRICITY' : 'FUEL';
   document.querySelector('.logo-icon').textContent = m === 'elec' ? '⚡' : '⛽';
+
+  const fTypeEl = document.getElementById('fType');
+  if (fTypeEl) fTypeEl.value = m;
+
+  if (typeof fillExistingData === 'function') {
+    fillExistingData();
+  }
+
   renderAll();
 }
 
@@ -604,6 +612,8 @@ function fillExistingData() {
   const year = Number(document.getElementById('fYear').value);
   const month = document.getElementById('fMonth').value;
   const type = document.getElementById('fType').value;
+
+  if (!allData) return;
   
   const source = type === 'elec' ? allData.electricity : allData.oil;
   
@@ -616,11 +626,13 @@ function fillExistingData() {
   if (existing) {
     document.getElementById('fStd').value = existing.standard;
     document.getElementById('fAct').value = existing.actual;
-    // เปลี่ยนสีปุ่มบันทึกหรือแจ้งเตือนเบาๆ ว่านี่คือข้อมูลเก่า
-    console.log("พบข้อมูลเดิม ดึงมาแสดงผลแล้ว");
+    const saveBtn = document.querySelector('#formModal .btn-primary');
+    if (saveBtn) saveBtn.innerHTML = '💾 อัปเดตข้อมูลเดิม';
   } else {
     document.getElementById('fStd').value = '';
     document.getElementById('fAct').value = '';
+    const saveBtn = document.querySelector('#formModal .btn-primary');
+    if (saveBtn) saveBtn.innerHTML = '💾 บันทึก';
   }
 }
 

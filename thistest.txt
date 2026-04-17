@@ -1,0 +1,235 @@
+const THAI_MONTHS = ['ตุลาคม','พฤศจิกายน','ธันวาคม','มกราคม','กุมภาพันธ์','มีนาคม',
+                     'เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน'];
+const MONTH_SHORT = ['ต.ค.','พ.ย.','ธ.ค.','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.'];
+
+function doGet(e) {
+  const action = e.parameter.action;
+  const callback = e.parameter.callback;
+  let result = { success: false };
+
+  if (action === 'all') {
+    result = { 
+    success: true, 
+    electricity: getSheetData('Data_Electricity'),
+    oil: getSheetData('Data_Oil'),
+    agencies: getAgencies() 
+  };
+  } 
+  else if (action === 'save') {
+    const payload = JSON.parse(e.parameter.payload);
+    result = saveToSheet(payload);
+  }
+  else if (action === 'delete') {
+  const payload = JSON.parse(e.parameter.payload);
+  result = deleteFromSheet(payload);
+  }
+  else if (action === 'verify') {
+    result = { success: true, code: e.parameter.code, isAdmin: e.parameter.code === 'ADMIN' };
+  }
+
+  const output = callback + '(' + JSON.stringify(result) + ')';
+  return ContentService.createTextOutput(output).setMimeType(ContentService.MimeType.JAVASCRIPT);
+}
+
+function saveToSheet(data) {
+  try {
+    const ss = SpreadsheetApp.openById('1HVPxh0z-CeNerejbrn17JMDGEPggkEzQspIrkOLSL20');
+    //const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheetName = data.type === 'elec' ? 'Data_Electricity' : 'Data_Oil';
+    let sheet = ss.getSheetByName(sheetName);
+    /*
+    if (!sheet) {
+      sheet = ss.insertSheet(sheetName);
+      sheet.appendRow(['Timestamp', 'Agency', 'Year', 'Month', 'Standard', 'Actual', 'Unit', 'User']);
+    }
+    */
+    if (!data.agency || 
+    !data.month || 
+    data.standard === null || 
+    data.actual === null) {
+      return { success: false, error: 'ข้อมูลไม่ครบถ้วนจากต้นทาง' };
+    }
+    if (isNaN(data.standard) || isNaN(data.actual)) {
+      return { success: false, error: 'ค่ามาตรฐานหรือค่าใช้จริงต้องเป็นตัวเลขเท่านั้น' };
+    }
+
+    if (!sheet) {
+      sheet = ss.insertSheet(sheetName);
+      const header = data.type === 'elec' 
+        ? ['หน่วยงาน', 'ปี', 'เดือน', 'ไฟฟ้ามาตรฐาน', 'ไฟฟ้าที่ใช้จริง', 'หน่วย', 'วันที่บันทึก', 'ผู้บันทึก']
+        : ['หน่วยงาน', 'ปี', 'เดือน', 'น้ำมันมาตรฐาน', 'น้ำมันที่ใช้จริง', 'หน่วย', 'วันที่บันทึก', 'ผู้บันทึก'];
+      sheet.appendRow(header);
+    }
+
+    const rows = sheet.getDataRange().getValues();
+    let targetRowIndex = -1;
+
+    let i = 1;
+    while (i < rows.length) {
+      const row = rows[i];
+      if (String(row[0]).trim() === String(data.agency).trim() && 
+          String(row[1]).trim() === String(data.year).trim() && 
+          String(row[2]).trim() === String(data.month).trim()) {
+        
+        targetRowIndex = i + 1;
+        break;
+      }
+      i++;
+    }
+
+    const rowToSave = [
+      data.agency,
+      data.year,
+      data.month,
+      data.standard,
+      data.actual,
+      data.unit,
+      new Date(),
+      data.user
+    ];
+    
+
+    if (targetRowIndex !== -1) {
+      sheet.getRange(targetRowIndex, 1, 1, rowToSave.length).setValues([rowToSave]);
+      return { success: true, message: 'อัปเดตข้อมูลเดิมเรียบร้อยแล้ว' };
+    } else {
+      sheet.appendRow(rowToSave);
+      return { success: true, message: 'บันทึกข้อมูลใหม่เรียบร้อยแล้ว' };
+    }
+    
+  } catch (err) {
+    return { success: false, error: 'Backend Error: ' + err.message };
+  }
+
+
+  /*
+  const data = getSampleData();
+  const callback = e.parameter.callback;
+
+  if (callback) {
+    const output = callback + '(' + JSON.stringify({success: true, ...data}) + ')';
+    return ContentService.createTextOutput(output)
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+
+  return ContentService.createTextOutput(JSON.stringify({success: true, ...data}))
+    .setMimeType(ContentService.MimeType.JSON);
+    */
+}
+
+function deleteFromSheet(data) {
+  try {
+    const ss = SpreadsheetApp.openById('1HVPxh0z-CeNerejbrn17JMDGEPggkEzQspIrkOLSL20');
+    const sheetName = data.type === 'elec' ? 'Data_Electricity' : 'Data_Oil';
+    const sheet = ss.getSheetByName(sheetName);
+    
+    if (!sheet) return { success: false, error: 'ไม่พบหน้าชีต' };
+
+    const rows = sheet.getDataRange().getValues();
+    let found = false;
+    let count = 0;
+    // just search rows with matching data agency year month
+    // column order must match like A=หน่วยงาน, B=ปี, C=เดือน
+    /*
+    for (let i = rows.length - 1; i >= 1; i--) { 
+      const row = rows[i];
+      if (row[0] == data.agency && row[1] == data.year && row[2] == data.month) {
+        sheet.deleteRow(i + 1); // just del if that found
+      }
+    }
+    */
+    let i = rows.length - 1;
+
+    while (i >= 1) {
+      const row = rows[i];
+      
+      if (row[0] == data.agency && row[1] == data.year && row[2] == data.month) {
+        sheet.deleteRow(i + 1);
+        found = true;
+        count++;
+      }
+      i--;
+    }
+    if (!found) {
+      return { success: false, error: 'ไม่พบข้อมูลที่ระบุในฐานข้อมูล' };
+    }
+
+    return { success: true, message: 'ลบข้อมูลเรียบร้อยแล้ว' };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+}
+
+function getSampleData() {
+  const elec = [];
+  const oil = [];
+  const baseE = {2567:[1920.55,1888.46,1866.35,1861.59,1915.03,1939.75,2005.31,1773.99,1765.85,1874.26,1932.38,1927.92],
+                 2568:[1909.21,1878.35,1781.96,1794.49,1833.08,1931.14,1881.01,1984.70,1911.25,1909.38,2015.46,1907.86],
+                 2569:[1898.61,1807.75,1774.91,1799.58,1831.73,1950.00,2000.00,1950.00,1900.00,1950.00,2000.00,1950.00]};
+  const actE = {2567:[601,556,440,372,371,642,673,951,643,581,508,641],
+                2568:[507,470,410,333,371,679,723,697,848,711,742,727],
+                2569:[755,562,325,318,399,0,0,0,0,0,0,0]};
+  const baseO = {2567:[341.11,341.11,341.91,341.11,341.11,341.11,341.11,311.17,311.17,331.13,341.11,341.11],
+                 2568:[341.11,341.11,341.11,341.11,341.11,341.11,341.11,341.11,341.11,341.11,341.11,341.11],
+                 2569:[341.11,341.11,341.11,341.11,341.11,341.11,341.11,341.11,341.11,341.11,341.11,341.11]};
+  const actO = {2567:[25.75,0.95,22.43,56.05,0.95,0.95,0.95,54.89,40.04,0.95,48.17,22.69],
+                2568:[0.95,34.01,0.95,47.33,107.69,0.95,57.98,29.21,57.98,73.03,72.67,132.91],
+                2569:[74.40,60.27,60.27,52.94,62.24,0,0,0,0,0,0,0]};
+  
+  const agencies = [
+    {code:'NBL001', name:'สำนักงานสถิติจังหวัดหนองบัวลำภู', ministry:'กระทรวงดิจิทัลฯ', active:true},
+    {code:'NBL002', name:'สำนักงานจังหวัดหนองบัวลำภู', ministry:'กระทรวงมหาดไทย', active:true},
+    {code:'NBL003', name:'ที่ทำการปกครองจังหวัดหนองบัวลำภู', ministry:'กระทรวงมหาดไทย', active:true},
+    {code:'NBL004', name:'สำนักงานพัฒนาชุมชนจังหวัด', ministry:'กระทรวงมหาดไทย', active:true},
+    {code:'NBL005', name:'สำนักงานที่ดินจังหวัดหนองบัวลำภู', ministry:'กระทรวงมหาดไทย', active:true},
+    {code:'NBL006', name:'สำนักงานโยธาธิการและผังเมืองจังหวัด', ministry:'กระทรวงมหาดไทย', active:true},
+    {code:'NBL007', name:'สำนักงานสาธารณสุขจังหวัดหนองบัวลำภู', ministry:'กระทรวงสาธารณสุข', active:true},
+    {code:'NBL008', name:'สำนักงานเกษตรจังหวัดหนองบัวลำภู', ministry:'กระทรวงเกษตรฯ', active:true},
+    {code:'NBL009', name:'สำนักงานประมงจังหวัดหนองบัวลำภู', ministry:'กระทรวงเกษตรฯ', active:true},
+    {code:'NBL010', name:'สำนักงานปศุสัตว์จังหวัดหนองบัวลำภู', ministry:'กระทรวงเกษตรฯ', active:true},
+    {code:'NBL011', name:'สำนักงานสหกรณ์จังหวัดหนองบัวลำภู', ministry:'กระทรวงเกษตรฯ', active:true},
+    {code:'NBL012', name:'สำนักงานขนส่งจังหวัดหนองบัวลำภู', ministry:'กระทรวงคมนาคม', active:true},
+    {code:'NBL013', name:'สำนักงานคลังจังหวัดหนองบัวลำภู', ministry:'กระทรวงการคลัง', active:true},
+    {code:'NBL014', name:'สำนักงานสรรพากรพื้นที่', ministry:'กระทรวงการคลัง', active:true},
+    {code:'NBL015', name:'สำนักงานประกันสังคมจังหวัด', ministry:'กระทรวงแรงงาน', active:true},
+    {code:'NBL016', name:'สำนักงานแรงงานจังหวัดหนองบัวลำภู', ministry:'กระทรวงแรงงาน', active:true},
+    {code:'NBL017', name:'สำนักงานจัดหางานจังหวัด', ministry:'กระทรวงแรงงาน', active:true},
+    {code:'NBL018', name:'สำนักงานอุตสาหกรรมจังหวัด', ministry:'กระทรวงอุตสาหกรรม', active:true},
+    {code:'NBL019', name:'สำนักงานพาณิชย์จังหวัดหนองบัวลำภู', ministry:'กระทรวงพาณิชย์', active:true},
+    {code:'NBL020', name:'สำนักงานวัฒนธรรมจังหวัดหนองบัวลำภู', ministry:'กระทรวงวัฒนธรรม', active:true},
+    {code:'NBL021', name:'สำนักงานการท่องเที่ยวและกีฬาจังหวัด', ministry:'กระทรวงการท่องเที่ยวฯ', active:true},
+    {code:'NBL022', name:'สำนักงานพัฒนาสังคมและความมั่นคงของมนุษย์', ministry:'กระทรวง พม.', active:true},
+    {code:'NBL023', name:'สำนักงานทรัพยากรธรรมชาติและสิ่งแวดล้อม', ministry:'กระทรวงทรัพย์ฯ', active:true},
+    {code:'NBL024', name:'สำนักงานพลังงานจังหวัดหนองบัวลำภู', ministry:'กระทรวงพลังงาน', active:true},
+    {code:'NBL025', name:'สำนักงานประชาสัมพันธ์จังหวัด', ministry:'สำนักนายกฯ', active:true},
+    {code:'NBL026', name:'สำนักงานพระพุทธศาสนาจังหวัด', ministry:'สำนักนายกฯ', active:true},
+    {code:'NBL027', name:'สำนักงานศึกษาธิการจังหวัด', ministry:'กระทรวงศึกษาธิการ', active:true},
+    {code:'NBL028', name:'สำนักงานเขตพื้นที่การศึกษาประถมศึกษา', ministry:'กระทรวงศึกษาธิการ', active:true},
+    {code:'NBL029', name:'สถานีตำรวจภูธรจังหวัดหนองบัวลำภู', ministry:'สำนักงานตำรวจแห่งชาติ', active:true},
+    {code:'NBL030', name:'องค์การบริหารส่วนจังหวัดหนองบัวลำภู', ministry:'อปท.', active:true}
+  ];
+  
+  agencies.forEach((ag, idx) => {
+    Object.keys(baseE).forEach(year => {
+      THAI_MONTHS.forEach((month, mi) => {
+        if (actE[year][mi] > 0) {
+          const variance = 0.7 + (idx * 0.15);
+          elec.push({
+            agency: ag.name, year: +year, month,
+            standard: Math.round(baseE[year][mi] * variance * 100)/100,
+            actual: Math.round(actE[year][mi] * variance * 100)/100,
+            unit: 'หน่วย'
+          });
+          oil.push({
+            agency: ag.name, year: +year, month,
+            standard: Math.round(baseO[year][mi] * variance * 100)/100,
+            actual: Math.round(actO[year][mi] * variance * 100)/100,
+            unit: 'ลิตร'
+          });
+        }
+      });
+    });
+  });
+  
+  return { electricity: elec, oil: oil, agencies };
+}
