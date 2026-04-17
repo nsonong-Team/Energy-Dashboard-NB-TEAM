@@ -599,6 +599,37 @@ function commonOpts({ legend = false } = {}) {
 }
 
 // ==================== FORM ====================
+function fillExistingData() {
+  const agency = document.getElementById('fAgency').value;
+  const year = Number(document.getElementById('fYear').value);
+  const month = document.getElementById('fMonth').value;
+  const type = document.getElementById('fType').value;
+  
+  const source = type === 'elec' ? allData.electricity : allData.oil;
+  
+  const existing = source.find(r => 
+    String(r.agency) === String(agency) && 
+    Number(r.year) === year && 
+    r.month === month
+  );
+
+  if (existing) {
+    document.getElementById('fStd').value = existing.standard;
+    document.getElementById('fAct').value = existing.actual;
+    // เปลี่ยนสีปุ่มบันทึกหรือแจ้งเตือนเบาๆ ว่านี่คือข้อมูลเก่า
+    console.log("พบข้อมูลเดิม ดึงมาแสดงผลแล้ว");
+  } else {
+    document.getElementById('fStd').value = '';
+    document.getElementById('fAct').value = '';
+  }
+}
+
+document.getElementById('fAgency').addEventListener('change', fillExistingData);
+document.getElementById('fYear').addEventListener('change', fillExistingData);
+document.getElementById('fMonth').addEventListener('change', fillExistingData);
+document.getElementById('fType').addEventListener('change', fillExistingData);
+
+
 function openForm() {
   document.getElementById('formModal').classList.add('active');
   if (currentUser) {
@@ -757,8 +788,8 @@ async function saveRecord() {
   if (
     !payload.agency || 
     !payload.month || 
-    fStd === '' ||
-    fAct === '' ||
+    stdVal === '' ||
+    actVal === '' ||
     isNaN(payload.standard) || 
     isNaN(payload.actual)
   ) {
