@@ -582,6 +582,7 @@ function renderRecentTable(records) {
 }
 
 function commonOpts({ legend = false } = {}) {
+  const isMobile = window.innerWidth < 700;
   return {
     responsive: true,
     maintainAspectRatio: false,
@@ -589,9 +590,15 @@ function commonOpts({ legend = false } = {}) {
     plugins: {
       legend: {
         display: legend,
-        position: 'top',
-        align: 'end',
-        labels: { color: '#8b95b0', font: { family: 'Prompt', size: 11 }, padding: 12, usePointStyle: true, boxWidth: 8 }
+        position: isMobile ? 'bottom' : 'top',
+        align: isMobile ? 'center' : 'end',
+        labels: { 
+            color: '#8b95b0', 
+            font: { family: 'Prompt', size: isMobile ? 10 : 11 },
+            padding: 10, 
+            usePointStyle: true, 
+            boxWidth: 8 
+        }
       },
       tooltip: {
         backgroundColor: 'rgba(10,14,26,0.95)',
@@ -606,8 +613,21 @@ function commonOpts({ legend = false } = {}) {
       }
     },
     scales: {
-      x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8b95b0' } },
-      y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8b95b0', callback: (v) => fmtNum(v) } }
+      x: { 
+        grid: { color: 'rgba(255,255,255,0.05)' }, 
+        ticks: { 
+            color: '#8b95b0',
+            font: { size: isMobile ? 9 : 11 }
+        } 
+      },
+      y: { 
+        grid: { color: 'rgba(255,255,255,0.05)' }, 
+        ticks: { 
+            color: '#8b95b0', 
+            font: { size: isMobile ? 9 : 11 },
+            callback: (v) => fmtNum(v) 
+        } 
+      }
     }
   };
 }
