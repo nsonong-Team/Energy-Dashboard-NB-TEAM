@@ -19,7 +19,7 @@ function doGet(e) {
 
   try {
     if (action === 'all') {
-      const data = getAgencies();
+      const agencyData = getAgencies();
       result = { 
         success: true, 
         /*
@@ -29,7 +29,7 @@ function doGet(e) {
         */
         electricity: getSheetData('Data_Electricity'),
         oil: getSheetData('Data_Oil'),
-        agencies: data.agencies
+        agencies: agencyData.agencies
       };
     } 
     else if (action === 'save') {
@@ -55,17 +55,20 @@ function getSheetData(sheetName) {
   const ss = SpreadsheetApp.openById('1HVPxh0z-CeNerejbrn17JMDGEPggkEzQspIrkOLSL20');
   let sheet = ss.getSheetByName(sheetName);
   if (!sheet) return [];
+
+  const values = sheet.getDataRange().getValues();
   
-  const rows = sheet.getDataRange().getValues();
-  if (rows.length <= 1) return []; 
+  if (values.length <= 1) return [];
+
+  const dataRows = values.slice(1);
   
-  return rows.slice(1).map(row => ({
+  return dataRows.map(row => ({
     agency: row[0],
     year: Number(row[1]),
     month: row[2],
-    standard: Number(row[3]),
-    actual: Number(row[4]),
-    unit: row[5]
+    standard: Number(row[3]) || 0,
+    actual: Number(row[4]) || 0,
+    unit: row[5] || ""
   }));
 }
 
@@ -167,6 +170,31 @@ function deleteFromSheet(data) {
 }
 
 function getAgencies() {
+  const ss = SpreadsheetApp.openById('1HVPxh0z-CeNerejbrn17JMDGEPggkEzQspIrkOLSL20');
+  const sheet = ss.getSheetByName('Agencies');
+  if (!sheet) return { agencies: [] };
+
+  const values = sheet.getDataRange().getValues();
+  const rows = values.slice(1);
+
+  const agencies = rows.map(row => ({
+    code: String(row[0]).trim(),
+    name: String(row[1]).trim(),
+    ministry: String(row[2]).trim(),
+    boss: String(row[3]).trim(),
+    phone: String(row[4]).trim(),
+    active: (
+  row[5] === true ||
+  String(row[5]).toUpperCase() === "TRUE" ||
+  String(row[5]).trim() === "ใช้งาน"
+)
+  })).filter(a => a.code !== "");
+
+  return { agencies: agencies };
+}
+
+/*
+function getAgencies() {
   const elec = [];
   const oil = [];
   const baseE = {2567:[1920.55,1888.46,1866.35,1861.59,1915.03,1939.75,2005.31,1773.99,1765.85,1874.26,1932.38,1927.92],
@@ -239,3 +267,4 @@ function getAgencies() {
   
   return { electricity: elec, oil: oil, agencies };
 }
+*/

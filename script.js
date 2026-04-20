@@ -87,15 +87,6 @@ async function loadData(showLoader = true) {
 function normalizeData(res) {
   // แปลง field names จาก backend ให้เป็น key ที่ JS ใช้
   const mapE = row => ({
-    /*
-    agency: row['หน่วยงาน'] || row['รายการ'] || '',
-    year: Number(row['ปี'] || row['ไฟฟ้า'] || row['น้ำมัน'] || 0),
-    month: String(row['เดือน'] || '').trim(),
-    standard: Number(row['ไฟฟ้ามาตรฐาน'] || row['น้ำมันมาตรฐาน'] || 0),
-    actual: Number(row['ไฟฟ้าที่ใช้จริง'] || row['น้ำมันที่ใช้จริง'] || 0),
-    unit: row['หน่วย'] || ''
-    */
-
     agency: row.agency || '', 
     year: Number(row.year || 0),
     month: String(row.month || '').trim(),
@@ -112,14 +103,6 @@ function normalizeData(res) {
       ministry: a.ministry || '',
       active: a.active === true || a.active === 'ใช้งาน'
     })).filter(a => a.name)
-
-/*
-      code: a.code || '', 
-      name: (a.name || '').trim(),
-      ministry: a.ministry || '',
-      active: a.active === true || a.active === 'ใช้งาน' 
-    })).filter(a => a.name)
-    */
   };
 }
 
@@ -684,37 +667,7 @@ function openForm() {
 function closeForm() {
   document.getElementById('formModal').classList.remove('active');
 }
-/*
-async function doLogin() {
-  const code = document.getElementById('loginCode').value.trim();
-  const pin = document.getElementById('loginPin').value.trim();
-  if (!code || !pin) { toast('กรอกรหัสหน่วยงานและ PIN', 'error'); return; }
-  
-  if (API_URL.includes('YOUR_DEPLOYMENT_ID')) {
-    // Demo mode
-    currentUser = { code, isAdmin: code.toUpperCase() === 'ADMIN' };
-    toast('✓ เข้าสู่ระบบ (demo mode)', 'success');
-    showFormStep();
-    return;
-  }
-  
-  toggleLoader(true, 'กำลังตรวจสอบ...');
-  try {
-    const res = await jsonp({ action: 'verify', code, pin });
-    if (res.success) {
-      currentUser = { code: res.code, isAdmin: res.isAdmin };
-      toast('✓ เข้าสู่ระบบสำเร็จ', 'success');
-      showFormStep();
-    } else {
-      toast('❌ ' + (res.error || 'PIN ไม่ถูกต้อง'), 'error');
-    }
-  } catch(e) {
-    toast('❌ ' + e.message, 'error');
-  } finally {
-    toggleLoader(false);
-  }
-}
-  */
+
 async function doLogin() {
   const code = document.getElementById('loginCode').value.trim().toUpperCase();
   const pin = document.getElementById('loginPin').value.trim();
@@ -787,24 +740,7 @@ function showFormStep() {
   // Default: ปีและเดือนปัจจุบัน
   document.getElementById('fType').value = mode;
 }
-/*
-function showFormStep() {
-  document.getElementById('loginStep').style.display = 'none';
-  document.getElementById('formStep').style.display = 'block';
-  
-  const fAgency = document.getElementById('fAgency');
-  
-  if (currentUser) {
-    const agency = allData.agencies.find(a => a.code === currentUser.code);
-    if (agency) {
-      fAgency.value = agency.name;
-    }
-  }
-  fAgency.disabled = false;
-  
-  document.getElementById('fType').value = mode;
-}
-  */
+
 
 async function saveRecord() {
   const stdVal = document.getElementById('fStd').value;
