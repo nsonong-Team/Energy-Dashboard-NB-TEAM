@@ -252,12 +252,55 @@ function renderAll() {
   document.getElementById('techoSave').textContent = fmtNum(sumStd - sumAct);
   
   // Status
+  /*
   const statusEl = document.getElementById('gaugeStatus');
   if (percent < 80) { statusEl.textContent = '✓ ประหยัดดี'; statusEl.style.background='rgba(0,230,118,0.15)'; statusEl.style.color='var(--success)'; }
   else if (percent < 100) { statusEl.textContent = '● ปกติ (ตามเป้า)'; statusEl.style.background='rgba(255,193,7,0.15)'; statusEl.style.color='var(--warning)'; }
   else if (percent < 120) { statusEl.textContent = '▲ เกินเป้าเล็กน้อย'; statusEl.style.background='rgba(255,152,0,0.15)'; statusEl.style.color='#ff9800'; }
   else { statusEl.textContent = '✕ เกินมาตรฐาน'; statusEl.style.background='rgba(255,23,68,0.15)'; statusEl.style.color='var(--danger)'; }
-  
+  */
+
+  const stdValEl = document.getElementById('techoStd');
+  const actValEl = document.getElementById('techoAct');
+  const saveValEl = document.getElementById('techoSave');
+  const statusEl = document.getElementById('gaugeStatus');
+  if (percent < 80) { 
+    statusEl.textContent = '✓ ประหยัดดี'; 
+    statusEl.style.background='rgba(0,230,118,0.15)'; 
+    const color = 'var(--success)';
+    statusEl.style.color = color;
+    stdValEl.style.color = color;
+    actValEl.style.color = color;
+    saveValEl.style.color = color;
+  } 
+  else if (percent < 100) { 
+    statusEl.textContent = '● ปกติ (ตามเป้า)'; 
+    statusEl.style.background='rgba(255,193,7,0.15)'; 
+    const color = 'var(--warning)';
+    statusEl.style.color = color;
+    stdValEl.style.color = color;
+    actValEl.style.color = color;
+    saveValEl.style.color = color;
+  } 
+  else if (percent < 120) { 
+    statusEl.textContent = '▲ เกินเป้าเล็กน้อย'; 
+    statusEl.style.background='rgba(255,152,0,0.15)'; 
+    const color = '#ff9800';
+    statusEl.style.color = color;
+    stdValEl.style.color = color;
+    actValEl.style.color = color;
+    saveValEl.style.color = color;
+  } 
+  else { 
+    statusEl.textContent = '✕ เกินมาตรฐาน'; 
+    statusEl.style.background='rgba(255,23,68,0.15)'; 
+    const color = 'var(--danger)';
+    statusEl.style.color = color;
+    stdValEl.style.color = color;
+    actValEl.style.color = color;
+    saveValEl.style.color = color;
+  }
+
   drawGauge(percent);
   
   // KPI
