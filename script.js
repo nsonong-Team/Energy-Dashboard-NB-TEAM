@@ -493,10 +493,17 @@ function renderStdVsAct(records) {
 function renderYoY(cur, prev, year) {
   const c = getAccent();
   charts.yoy?.destroy();
+  const total = cur + prev;
+  const prevPercent = total > 0 ? ((prev / total) * 100).toFixed(1) : 0;
+  const curPercent = total > 0 ? ((cur / total) * 100).toFixed(1) : 0;
+
   charts.yoy = new Chart(document.getElementById('yoyChart'), {
     type: 'doughnut',
     data: {
-      labels: ['ปี ' + (year-1), 'ปี ' + year],
+      labels: [
+        `ปี ${year - 1} (${prevPercent}%)`, 
+        `ปี ${year} (${curPercent}%)`
+      ],
       datasets: [{
         data: [prev, cur],
         backgroundColor: ['rgba(255,255,255,0.15)', c.primary],
@@ -509,8 +516,23 @@ function renderYoY(cur, prev, year) {
       maintainAspectRatio: false,
       cutout: '70%',
       plugins: {
-        legend: { position: 'bottom', labels: { color: '#8b95b0', font: { family: 'Prompt', size: 11 }, padding: 12, usePointStyle: true } },
-        tooltip: { callbacks: { label: (ctx) => ctx.label + ': ' + fmtNum(ctx.parsed) } }
+        legend: { 
+          position: 'bottom', 
+          labels: { 
+            color: '#8b95b0', 
+            font: { family: 'Prompt', size: 11 }, 
+            padding: 12, 
+            usePointStyle: true 
+          } 
+        },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const value = ctx.parsed;
+              return ` ${ctx.label.split(' ')[0]} ${ctx.label.split(' ')[1]}: ${fmtNum(value)}`;
+            }
+          }
+        }
       }
     }
   });
