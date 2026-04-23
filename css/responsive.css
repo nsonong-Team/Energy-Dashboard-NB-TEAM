@@ -1,0 +1,200 @@
+/* ========================================================= */
+/* ================= RESPONSIVE BREAKPOINTS ================ */
+/* ========================================================= */
+
+/* Tablet landscape / small desktop */
+@media (max-width: 1200px) {
+    .dashboard { grid-template-columns: 1fr 1fr; }
+    .card.chart-card { grid-column: span 2; }
+    .card.chart-card.half { grid-column: span 2; }
+    .card.chart-card.third { grid-column: span 1; }
+    .card.techometer { grid-column: span 2; grid-row: auto; }
+    .card.kpi { grid-column: span 1; }
+}
+
+/* Tablet portrait */
+@media (max-width: 900px) {
+    .header { padding: 14px 16px; }
+    .header-inner { gap: 12px; }
+    .logo-text h1 { font-size: 15px; letter-spacing: 1px; }
+    .logo-text p { font-size: 11px; }
+    .logo-icon { width: 44px; height: 44px; font-size: 22px; }
+
+    .tab-selector { padding: 0 16px; margin: 20px auto 16px; gap: 12px; }
+    .filters-bar { padding: 0 16px; gap: 10px; }
+    .dashboard { padding: 0 16px 32px; gap: 12px; }
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+    .header {
+        padding: 12px 14px;
+    }
+    .header-inner {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    .logo-block { gap: 12px; }
+    .logo-text h1 {
+        font-size: 14px;
+        letter-spacing: 0.5px;
+    }
+    .logo-text p { font-size: 10px; }
+    .logo-icon { width: 40px; height: 40px; font-size: 20px; border-radius: 10px; }
+
+    .header-actions {
+        width: 100%;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+    .status-chip {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+    .btn {
+        padding: 9px 12px;
+        font-size: 12px;
+    }
+
+    .tab-selector {
+        grid-template-columns: 1fr;
+        padding: 0 14px;
+        margin: 16px auto 14px;
+        gap: 10px;
+    }
+    .tab-card { padding: 14px 16px; gap: 12px; }
+    .tab-icon { width: 44px; height: 44px; font-size: 22px; }
+    .tab-info h3 { font-size: 14px; }
+    .tab-info p { font-size: 11px; }
+
+    .filters-bar {
+        padding: 0 14px;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+    .filter-group {
+        flex: 1 1 100%;
+        padding: 8px 12px;
+    }
+
+    .dashboard {
+        grid-template-columns: 1fr;
+        padding: 0 14px 60px; /* extra bottom padding so last card isn't cut off */
+        gap: 12px;
+    }
+
+    /* CRITICAL: force all cards to span 1 column — overrides span 2/3 */
+    .card.chart-card,
+    .card.chart-card.half,
+    .card.chart-card.third,
+    .card.kpi,
+    .card.techometer {
+        grid-column: 1 / -1 !important;
+        grid-row: auto !important;
+    }
+
+    .card { padding: 16px; border-radius: 14px; }
+
+    .kpi-value { font-size: 28px; }
+    .card-title { font-size: 11px; letter-spacing: 1px; }
+
+    /* Techometer on mobile */
+    .card.techometer {
+        min-height: auto;
+        padding: 18px 16px;
+    }
+    .techometer-header {
+        margin-bottom: 4px;
+    }
+    .techo-agency {
+        max-width: 100%;
+        text-align: left;
+    }
+    .gauge-wrap {
+        max-width: 320px;
+    }
+    .gauge-percent { font-size: 38px; }
+    .gauge-percent-sign { font-size: 20px; }
+    .gauge-status { font-size: 12px; margin-top: 30px; }
+    .techo-stat-value { font-size: 15px; }
+    .techo-stat-label { font-size: 9px; }
+
+    /* Charts smaller on mobile */
+    .chart-wrap { 
+        height: 260px !important; 
+        min-height: 260px !important;
+        display: block;
+    }
+    .chart-wrap.sm { height: 220px; }
+
+    /* Modal on mobile */
+    .modal-overlay { padding: 12px; }
+    .modal {
+        padding: 20px 18px;
+        border-radius: 16px;
+    }
+    .modal h2 { font-size: 16px; }
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    .form-group.full { grid-column: span 1; }
+
+    .modal-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .modal-actions .btn {
+        flex: 1 1 100%;
+        width: 100%;
+        padding: 12px;
+    }
+
+    /* Table */
+    .data-table { font-size: 12px; }
+    .data-table th, .data-table td { padding: 8px 10px; }
+
+    /* Toast */
+    .toast {
+        top: 12px;
+        right: 12px;
+        left: 12px;
+        max-width: none;
+        font-size: 12px;
+        padding: 12px 16px;
+    }
+
+    /* Disable hover transforms on touch (they feel weird) */
+    .tab-card:hover,
+    .btn:hover,
+    .card:hover {
+        transform: none;
+    }
+
+    /* Lighter background effects for perf on mobile */
+    body::after {
+        background-size: 30px 30px;
+        opacity: 0.15;
+    }
+}
+
+/* Very small phones */
+@media (max-width: 380px) {
+    .logo-text h1 { font-size: 13px; }
+    .header-actions .btn { padding: 8px 10px; font-size: 11px; }
+    .status-chip { display: none; } /* hide to save space */
+    .kpi-value { font-size: 24px; }
+    .gauge-percent { font-size: 32px; }
+    .chart-wrap { height: 220px; }
+    .chart-wrap.sm { height: 200px; }
+}
+
+/* Reduce motion preference */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

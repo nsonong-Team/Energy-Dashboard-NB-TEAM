@@ -1,0 +1,72 @@
+:root {
+    --bg-primary: #0a0e1a;
+    --bg-secondary: #121826;
+    --bg-card: rgba(18, 24, 38, 0.85);
+    --bg-card-hover: rgba(28, 36, 56, 0.9);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.15);
+    --text-primary: #f0f4ff;
+    --text-secondary: #8b95b0;
+    --text-muted: #5a6580;
+
+    --elec-primary: #00e5ff;
+    --elec-secondary: #0099ff;
+    --elec-glow: rgba(0, 229, 255, 0.4);
+
+    --oil-primary: #ff8a00;
+    --oil-secondary: #ff3d00;
+    --oil-glow: rgba(255, 138, 0, 0.4);
+
+    --success: #00e676;
+    --warning: #ffc107;
+    --danger: #ff1744;
+
+    --accent-primary: var(--elec-primary);
+    --accent-secondary: var(--elec-secondary);
+    --accent-glow: var(--elec-glow);
+}
+
+body.mode-oil {
+    --accent-primary: var(--oil-primary);
+    --accent-secondary: var(--oil-secondary);
+    --accent-glow: var(--oil-glow);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    font-family: 'Prompt', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    min-height: 100dvh; /* iOS Safari viewport fix */
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+        radial-gradient(ellipse at 20% 10%, var(--accent-glow) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(100, 50, 200, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(0, 50, 100, 0.1) 0%, transparent 60%);
+    z-index: -1;
+    pointer-events: none;
+    transition: all 0.6s ease;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.3;
+}
